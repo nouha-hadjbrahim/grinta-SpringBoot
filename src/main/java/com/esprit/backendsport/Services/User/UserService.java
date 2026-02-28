@@ -1,7 +1,8 @@
-package com.esprit.backendsport.Services;
+package com.esprit.backendsport.Services.User;
 
-import com.esprit.backendsport.Entities.User;
-import com.esprit.backendsport.Repository.UserRepository;
+import com.esprit.backendsport.Entities.User.User;
+import com.esprit.backendsport.Repository.User.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,9 @@
-package com.esprit.backendsport.Controller;
+package com.esprit.backendsport.Controller.User;
 
-import com.esprit.backendsport.Entities.User;
-import com.esprit.backendsport.Services.IUserService;
+import com.esprit.backendsport.Entities.User.User;
+import com.esprit.backendsport.Security.JwtUtil;
+import com.esprit.backendsport.Services.User.IUserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class AuthController {
 
     private final IUserService userService;
+    private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/sign-in")
@@ -27,7 +30,12 @@ public class AuthController {
         Optional<User> userOpt = userService.findByEmail(email);
 
         if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
-            return ResponseEntity.ok(userOpt.get());
+            String token = jwtUtil.generateToken(email);
+            return ResponseEntity.ok(Map.of(
+                "token", token,
+                "email", email,
+                "id", userOpt.get().getId()
+            ));
         }
 
         return ResponseEntity.status(401).body("Invalid email or password");

@@ -1,7 +1,8 @@
-package com.esprit.backendsport.Controller;
+package com.esprit.backendsport.Controller.User;
 
-import com.esprit.backendsport.Entities.User;
-import com.esprit.backendsport.Services.IUserService;
+import com.esprit.backendsport.Entities.User.User;
+import com.esprit.backendsport.Services.User.IUserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

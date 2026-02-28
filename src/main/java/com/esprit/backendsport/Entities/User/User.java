@@ -1,4 +1,4 @@
-package com.esprit.backendsport.Entities;
+package com.esprit.backendsport.Entities.User;
 
 import jakarta.persistence.*;
 import lombok.*;

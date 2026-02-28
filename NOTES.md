@@ -3,24 +3,57 @@
 ## Project Structure
 ```
 src/main/java/com/esprit/backendsport/
-├── BackendSportApplication.java       # Spring Boot entry point
+├── BackendSportApplication.java
+│
+├── Security/
+│   └── JwtUtil.java                   # JWT token generation & validation
 │
 ├── Entities/
-│   └── User.java                      # User entity (id, email, password)
+│   ├── User/
+│   ├── bookings/
+│   ├── coaching/
+│   ├── community/
+│   ├── events/
+│   ├── gyms/
+│   ├── nutrition/
+│   └── workouts/
 │
 ├── Repository/
-│   └── UserRepository.java            # Extends JpaRepository, custom findByEmail
+│   ├── User/
+│   ├── bookings/
+│   ├── coaching/
+│   ├── community/
+│   ├── events/
+│   ├── gyms/
+│   ├── nutrition/
+│   └── workouts/
 │
 ├── Services/
-│   ├── IUserService.java              # Service interface (contract)
-│   └── UserService.java               # Service implementation
+│   ├── User/
+│   │   ├── IUserService.java
+│   │   └── UserService.java
+│   ├── bookings/
+│   ├── coaching/
+│   ├── community/
+│   ├── events/
+│   ├── gyms/
+│   ├── nutrition/
+│   └── workouts/
 │
 └── Controller/
-    ├── UserController.java            # REST endpoints for User (GET, DELETE)
-    └── AuthController.java            # Auth endpoints (login, register) with BCrypt
+    ├── User/
+    │   ├── UserController.java        # REST endpoints (GET, DELETE)
+    │   └── AuthController.java        # sign-in, sign-up with BCrypt + JWT
+    ├── bookings/
+    ├── coaching/
+    ├── community/
+    ├── events/
+    ├── gyms/
+    ├── nutrition/
+    └── workouts/
 
 src/main/resources/
-└── application.properties             # DB config, port, JPA settings
+└── application.properties
 ```
 
 ## Configuration (application.properties)
@@ -38,17 +71,17 @@ src/main/resources/
 |-------|------|------------|
 | `id` | `Long` | PK, Auto-generated |
 | `email` | `String` | Unique, Not null |
-| `password` | `String` | Not null |
+| `password` | `String` | Not null (BCrypt hashed) |
 
 ## Repository — `UserRepository`
-- Extends `JpaRepository<User, Long>` (free CRUD operations)
+- Extends `JpaRepository<User, Long>`
 - Custom method: `findByEmail(String email)` → `Optional<User>`
 
 ## Service
 ### `IUserService` (interface)
 - `save(User user)`
 - `findByEmail(String email)`
-- `findAll` 
+- `findAll()`
 - `deleteById(Long id)`
 
 ### `UserService` (implementation)
@@ -60,25 +93,30 @@ Base URL: `http://localhost:8000/api/users`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/users?page=0&size=10` | Get users (paginated) |
+| `GET` | `/api/users` | Get all users |
 | `GET` | `/api/users/email/{email}` | Get user by email |
 | `DELETE` | `/api/users/{id}` | Delete user by ID |
 
-> ⚠️`/api/auth/register` (create user)
-
-- `@CrossOrigin(origins = "http://localhost:4200")` enabled for Angular
+> ⚠️ Use `/api/auth/sign-up` to create users
 
 ## Controller — `AuthController`
 Base URL: `http://localhost:8000/api/auth`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/auth/sign-up` | Register new user (BCrypt hashes password) |
-| `POST` | `/api/auth/sign-in` | Login (BCrypt verifies password) |
+| `POST` | `/api/auth/sign-up` | Register user (BCrypt hashes password) |
+| `POST` | `/api/auth/sign-in` | Login → returns `{ token, email, id }` |
+
+## Security — `JwtUtil`
+- Generates JWT token on sign-in (expires in **24 hours**)
+- Validates token
+- Extracts email from token
+- Uses `HS256` algorithm
 
 ## Key Decisions
-- ✅ Used **pagination** (`Pageable`) instead of `findAll()` to avoid loading unnecessary data
-- ✅ Used **interface + implementation** pattern for the service layer
-- ✅ Used **Lombok** (`@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`) to reduce boilerplate
-- ✅ Used **BCrypt** (`spring-security-crypto`) to hash passwords on register and verify on login
-- ✅ Removed `POST /api/users` — user creation only through `/api/auth/register`
+- ✅ Organized all features into sub-packages (`Controller/user`, `Entities/events`, etc.)
+- ✅ Used **interface + implementation** pattern for service layer
+- ✅ Used **Lombok** to reduce boilerplate
+- ✅ Used **BCrypt** to hash passwords on sign-up and verify on sign-in
+- ✅ Used **JWT** (`jjwt 0.11.5`) — token returned on sign-in, stored on frontend
+- ✅ Removed `POST /api/users` — user creation only through `/api/auth/sign-up`
