@@ -16,7 +16,8 @@ src/main/java/com/esprit/backendsport/
 │   └── UserService.java               # Service implementation
 │
 └── Controller/
-    └── UserController.java            # REST endpoints for User
+    ├── UserController.java            # REST endpoints for User (GET, DELETE)
+    └── AuthController.java            # Auth endpoints (login, register) with BCrypt
 
 src/main/resources/
 └── application.properties             # DB config, port, JPA settings
@@ -25,7 +26,7 @@ src/main/resources/
 ## Configuration (application.properties)
 | Property | Value |
 |----------|-------|
-| Server port | `8000` | (port 8000 bich ntestiw il postman)
+| Server port | `8000` |
 | Database | MySQL on port `3300` |
 | Database name | `sport` |
 | DDL auto | `create` |
@@ -61,12 +62,23 @@ Base URL: `http://localhost:8000/api/users`
 |--------|----------|-------------|
 | `GET` | `/api/users?page=0&size=10` | Get users (paginated) |
 | `GET` | `/api/users/email/{email}` | Get user by email |
-| `POST` | `/api/users` | Create new user |
 | `DELETE` | `/api/users/{id}` | Delete user by ID |
 
+> ⚠️`/api/auth/register` (create user)
+
 - `@CrossOrigin(origins = "http://localhost:4200")` enabled for Angular
+
+## Controller — `AuthController`
+Base URL: `http://localhost:8000/api/auth`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/sign-up` | Register new user (BCrypt hashes password) |
+| `POST` | `/api/auth/sign-in` | Login (BCrypt verifies password) |
 
 ## Key Decisions
 - ✅ Used **pagination** (`Pageable`) instead of `findAll()` to avoid loading unnecessary data
 - ✅ Used **interface + implementation** pattern for the service layer
 - ✅ Used **Lombok** (`@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`) to reduce boilerplate
+- ✅ Used **BCrypt** (`spring-security-crypto`) to hash passwords on register and verify on login
+- ✅ Removed `POST /api/users` — user creation only through `/api/auth/register`

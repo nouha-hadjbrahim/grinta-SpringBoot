@@ -28,11 +28,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.ok(userService.save(user));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteById(id);
