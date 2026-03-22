@@ -32,4 +32,11 @@ public class PostComment {
 
     @Temporal(TemporalType.DATE)
     private Date createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "parentCommentId")
+    private PostComment parentComment;
+
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private int likesCount;
 }

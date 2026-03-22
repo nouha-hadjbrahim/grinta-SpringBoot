@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -18,4 +19,5 @@ public class PostDTO {
     private int commentsCount;
     private int sharesCount;
     private PostType type;
+    private List<Long> likedByUserIds;
 }

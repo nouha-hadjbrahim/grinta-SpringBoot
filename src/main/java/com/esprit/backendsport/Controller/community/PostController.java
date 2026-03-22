@@ -2,6 +2,8 @@ package com.esprit.backendsport.Controller.community;
 
 import com.esprit.backendsport.Entities.community.CreatePostRequestDTO;
 import com.esprit.backendsport.Entities.community.PostDTO;
+import com.esprit.backendsport.Entities.community.PostCommentDTO;
+import com.esprit.backendsport.Entities.community.CreateCommentRequest;
 import com.esprit.backendsport.Services.community.IPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +36,58 @@ public class PostController {
         return postService.savePost(request);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PostDTO> updatePost(@PathVariable Long id, @RequestBody CreatePostRequestDTO request) {
+        try {
+            return ResponseEntity.ok(postService.updatePost(id, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Likes
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Void> toggleLike(@PathVariable Long postId, @RequestParam Long userId) {
+        try {
+            postService.toggleLike(postId, userId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Comments
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<PostCommentDTO> addComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+        try {
+            return ResponseEntity.ok(postService.addComment(postId, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<Void> toggleCommentLike(@PathVariable Long commentId, @RequestParam Long userId) {
+        try {
+            postService.toggleCommentLike(commentId, userId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<PostCommentDTO>> getComments(@PathVariable Long postId) {
+        try {
+            return ResponseEntity.ok(postService.getCommentsByPost(postId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
