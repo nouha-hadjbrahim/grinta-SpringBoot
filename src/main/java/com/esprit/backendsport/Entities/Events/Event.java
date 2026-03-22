@@ -33,6 +33,9 @@ public class Event {
 
     private int maxParticipants;
 
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId;        // ← ajoutez uniquement cette ligne
+
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("event-registrations")
     private List<EventRegistration> registrations;
