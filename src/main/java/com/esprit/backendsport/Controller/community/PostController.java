@@ -8,6 +8,7 @@ import com.esprit.backendsport.Services.community.IPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,15 +32,19 @@ public class PostController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public PostDTO createPost(@RequestBody CreatePostRequestDTO request) {
-        return postService.savePost(request);
+    @PostMapping(consumes = {"multipart/form-data"})
+    public PostDTO createPost(@ModelAttribute CreatePostRequestDTO request,
+                              @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        return postService.savePost(request, files);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PostDTO> updatePost(@PathVariable Long id, @RequestBody CreatePostRequestDTO request) {
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<PostDTO> updatePost(@PathVariable Long id,
+                                              @ModelAttribute CreatePostRequestDTO request,
+                                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                              @RequestParam(value = "deletedImageIds", required = false) List<Integer> deletedImageIds) {
         try {
-            return ResponseEntity.ok(postService.updatePost(id, request));
+            return ResponseEntity.ok(postService.updatePost(id, request, files, deletedImageIds));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -48,6 +53,12 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+        postService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
 

@@ -4,7 +4,9 @@ import com.esprit.backendsport.Entities.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -29,16 +31,21 @@ public class Post {
     @Temporal(TemporalType.DATE)
     private Date createdAt;
 
-    private String imageUrl;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostImage> images = new ArrayList<>();
 
     @Column(columnDefinition = "INT DEFAULT 0")
-    private int likesCount;
+    @Builder.Default
+    private int likesCount = 0;
 
     @Column(columnDefinition = "INT DEFAULT 0")
-    private int commentsCount;
+    @Builder.Default
+    private int commentsCount = 0;
 
     @Column(columnDefinition = "INT DEFAULT 0")
-    private int sharesCount;
+    @Builder.Default
+    private int sharesCount = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

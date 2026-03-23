@@ -8,6 +8,5 @@ import lombok.Data;
 public class CreatePostRequestDTO {
     private Long userId;
     private String content;
-    private String imageUrl;
     private PostType type;
 }

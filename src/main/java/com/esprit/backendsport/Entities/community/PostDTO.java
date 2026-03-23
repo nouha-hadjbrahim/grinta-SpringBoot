@@ -11,13 +11,14 @@ import java.util.List;
 public class PostDTO {
     private Long postId;
     private Long userId;
-    private String userEmail; // To show who made the post
+    private String userEmail;
     private String content;
     private Date createdAt;
-    private String imageUrl;
+    private List<PostImageDTO> images; // List of images instead of simple imageUrl
     private int likesCount;
     private int commentsCount;
     private int sharesCount;
     private PostType type;
     private List<Long> likedByUserIds;
+    private List<UserSummaryDTO> likedByUsers;
 }
