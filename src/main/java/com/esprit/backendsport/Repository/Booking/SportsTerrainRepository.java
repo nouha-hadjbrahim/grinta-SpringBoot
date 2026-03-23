@@ -5,3 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SportsTerrainRepository extends JpaRepository<SportsTerrain, Long> {
 }
+
