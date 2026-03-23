@@ -29,33 +29,28 @@ public class BookingService {
     }
 
     public Booking save(Booking booking) {
-        // ✅ Vérifier double réservation
-        boolean alreadyBooked = bookingRepository
-            .findBySportsTerrainIdAndDate(
-                booking.getSportsTerrain().getId(), booking.getDate())
-            .stream()
-            .anyMatch(b -> b.getTime().equals(booking.getTime())
-                        && !"CANCELLED".equals(b.getStatus()));
-        if (alreadyBooked) throw new RuntimeException("ALREADY_BOOKED");
+    // Vérifier double réservation
+    boolean alreadyBooked = bookingRepository
+        .findBySportsTerrainIdAndDate(
+            booking.getSportsTerrain().getId(), booking.getDate())
+        .stream()
+        .anyMatch(b -> b.getTime().equals(booking.getTime())
+                    && !"CANCELLED".equals(b.getStatus()));
+    if (alreadyBooked) throw new RuntimeException("ALREADY_BOOKED");
 
-        // ✅ Vérifier places disponibles
-        var terrain = terrainRepository.findById(
-            booking.getSportsTerrain().getId())
-            .orElseThrow(() -> new RuntimeException("Terrain not found"));
+    // Vérifier places disponibles
+    var terrain = terrainRepository.findById(
+        booking.getSportsTerrain().getId())
+        .orElseThrow(() -> new RuntimeException("Terrain not found"));
 
-        if (terrain.getAvailableSlots() != null && terrain.getAvailableSlots() <= 0) {
-            throw new RuntimeException("NO_SLOTS");
-        }
-
-        // ✅ Décrémenter les places
-        if (terrain.getAvailableSlots() != null) {
-            terrain.setAvailableSlots(terrain.getAvailableSlots() - 1);
-            terrainRepository.save(terrain);
-        }
-
-        booking.setStatus("CONFIRMED");
-        return bookingRepository.save(booking);
+    if (terrain.getAvailableSlots() != null && terrain.getAvailableSlots() <= 0) {
+        throw new RuntimeException("NO_SLOTS");
     }
+
+    // ✅ Status PENDING au lieu de CONFIRMED (paiement requis)
+    booking.setStatus("PENDING");
+    return bookingRepository.save(booking);
+}
 
     public Booking update(Long id, Booking updated) {
         return bookingRepository.findById(id).map(b -> {
