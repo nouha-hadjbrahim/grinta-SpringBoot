@@ -41,6 +41,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         // Serve uploaded images without authentication
                         .requestMatchers("/uploads/**").permitAll()
                         // Admin endpoints
