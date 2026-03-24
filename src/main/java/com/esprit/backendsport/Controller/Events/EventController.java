@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/events")
@@ -83,5 +85,52 @@ public class EventController {
     public ResponseEntity<Void> cancel(@PathVariable Long registrationId) {
         eventService.cancelRegistration(registrationId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ========== ADMIN ENDPOINTS ==========
+
+    // Récupérer TOUS les événements (admin)
+    @GetMapping("/admin/all")
+    public List<Event> getAllEventsAdmin() {
+        return eventService.getAllEvents();
+    }
+
+    // Supprimer n'importe quel événement (admin)
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Void> deleteEventAdmin(@PathVariable Long id) {
+        eventService.deleteEvent(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Changer le statut d'un événement (admin)
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<Event> changeStatusAdmin(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        Event event = eventService.getEventById(id);
+        event.setStatus(EventStatus.valueOf(status.toUpperCase()));
+        Event updatedEvent = eventService.updateEvent(id, event);
+        return ResponseEntity.ok(updatedEvent);
+    }
+
+    // Statistiques des événements (admin)
+    @GetMapping("/admin/stats")
+    public ResponseEntity<Map<String, Integer>> getStatsAdmin() {
+        List<Event> events = eventService.getAllEvents();
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("total", events.size());
+        stats.put("upcoming", (int) events.stream()
+                .filter(e -> e.getStatus() == EventStatus.UPCOMING)
+                .count());
+        stats.put("ongoing", (int) events.stream()
+                .filter(e -> e.getStatus() == EventStatus.ONGOING)
+                .count());
+        stats.put("completed", (int) events.stream()
+                .filter(e -> e.getStatus() == EventStatus.COMPLETED)
+                .count());
+        stats.put("cancelled", (int) events.stream()
+                .filter(e -> e.getStatus() == EventStatus.CANCELLED)
+                .count());
+        return ResponseEntity.ok(stats);
     }
 }
