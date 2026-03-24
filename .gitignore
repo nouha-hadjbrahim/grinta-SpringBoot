@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Documentation ###
+doc/
+
+### Scripts & Environment ###
+*.ps1
+*.env
