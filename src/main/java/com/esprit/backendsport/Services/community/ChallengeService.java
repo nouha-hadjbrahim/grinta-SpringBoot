@@ -5,9 +5,12 @@ import com.esprit.backendsport.Entities.community.Challenge;
 import com.esprit.backendsport.Entities.community.UserChallenge;
 import com.esprit.backendsport.Repository.community.ChallengeRepository;
 import com.esprit.backendsport.Repository.community.UserChallengeRepository;
+import com.esprit.backendsport.Repository.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +23,9 @@ public class ChallengeService {
 
     @Autowired
     private UserChallengeRepository userChallengeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Challenge> getAllChallenges() {
         return challengeRepository.findAll();
@@ -55,5 +61,53 @@ public class ChallengeService {
 
     public void deleteChallenge(Long id) {
         challengeRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void joinChallenge(Long challengeId, Long userId) {
+        if (userChallengeRepository.existsByChallenge_ChallengeIdAndUser_Id(challengeId, userId)) {
+            throw new RuntimeException("User already joined this challenge");
+        }
+
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserChallenge userChallenge = UserChallenge.builder()
+                .challenge(challenge)
+                .user(user)
+                .joinDate(new Date())
+                .progress(0)
+                .pointsEarned(0)
+                .completed(false)
+                .build();
+        
+        userChallengeRepository.save(userChallenge);
+        
+        challenge.setParticipantsCount(challenge.getParticipantsCount() + 1);
+        challengeRepository.save(challenge);
+    }
+
+    @Transactional
+    public void leaveChallenge(Long challengeId, Long userId) {
+        if (!userChallengeRepository.existsByChallenge_ChallengeIdAndUser_Id(challengeId, userId)) {
+            throw new RuntimeException("User is not part of this challenge");
+        }
+        
+        userChallengeRepository.deleteByChallenge_ChallengeIdAndUser_Id(challengeId, userId);
+        
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+        
+        challenge.setParticipantsCount(Math.max(0, challenge.getParticipantsCount() - 1));
+        challengeRepository.save(challenge);
+    }
+
+    public List<Long> getJoinedChallengeIds(Long userId) {
+        return userChallengeRepository.findByUser_Id(userId).stream()
+                .map(userChallenge -> userChallenge.getChallenge().getChallengeId())
+                .collect(Collectors.toList());
     }
 }

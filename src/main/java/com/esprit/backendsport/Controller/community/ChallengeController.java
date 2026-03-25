@@ -1,14 +1,15 @@
 package com.esprit.backendsport.Controller.community;
 
-import com.esprit.backendsport.Entities.User.User;
 import com.esprit.backendsport.Entities.community.Challenge;
+import com.esprit.backendsport.Entities.community.ChallengeDTO;
+import com.esprit.backendsport.Entities.community.UserSummaryDTO;
 import com.esprit.backendsport.Services.community.ChallengeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/challenges")
@@ -18,32 +19,46 @@ public class ChallengeController {
     private ChallengeService challengeService;
 
     @GetMapping
-    public List<Challenge> getAllChallenges() {
-        return challengeService.getAllChallenges();
+    public ResponseEntity<List<ChallengeDTO>> getAllChallenges() {
+        List<ChallengeDTO> challenges = challengeService.getAllChallenges().stream()
+                .map(ChallengeDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(challenges);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Challenge> getChallengeById(@PathVariable Long id) {
+    public ResponseEntity<ChallengeDTO> getChallengeById(@PathVariable Long id) {
         return challengeService.getChallengeById(id)
+                .map(ChallengeDTO::fromEntity)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/participants")
-    public ResponseEntity<List<User>> getChallengeParticipants(@PathVariable Long id) {
-        return ResponseEntity.ok(challengeService.getChallengeParticipants(id));
+    public ResponseEntity<List<UserSummaryDTO>> getChallengeParticipants(@PathVariable Long id) {
+        List<UserSummaryDTO> participants = challengeService.getChallengeParticipants(id).stream()
+                .map(user -> UserSummaryDTO.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(participants);
     }
 
     @PostMapping
-    public Challenge createChallenge(@RequestBody Challenge challenge) {
-        return challengeService.createChallenge(challenge);
+    public ResponseEntity<ChallengeDTO> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
+        Challenge challenge = challengeDTO.toEntity();
+        Challenge savedChallenge = challengeService.createChallenge(challenge);
+        return ResponseEntity.ok(ChallengeDTO.fromEntity(savedChallenge));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Challenge> updateChallenge(@PathVariable Long id, @RequestBody Challenge challengeDetails) {
+    public ResponseEntity<ChallengeDTO> updateChallenge(@PathVariable Long id, @RequestBody ChallengeDTO challengeDTODetails) {
         try {
+            Challenge challengeDetails = challengeDTODetails.toEntity();
             Challenge updatedChallenge = challengeService.updateChallenge(id, challengeDetails);
-            return ResponseEntity.ok(updatedChallenge);
+            return ResponseEntity.ok(ChallengeDTO.fromEntity(updatedChallenge));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
