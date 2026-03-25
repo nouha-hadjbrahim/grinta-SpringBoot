@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface UserChallengeRepository extends JpaRepository<UserChallenge, Long> {
     List<UserChallenge> findByChallenge_ChallengeId(Long challengeId);
+    List<UserChallenge> findByUser_Id(Long userId);
+    boolean existsByChallenge_ChallengeIdAndUser_Id(Long challengeId, Long userId);
+    void deleteByChallenge_ChallengeIdAndUser_Id(Long challengeId, Long userId);
 }
